@@ -17,6 +17,8 @@ DEFAULT_PUSH_SERVER = {
 def process_images(mode, imagefile, source_server, dest_server, remain):
     with open(imagefile, "r") as file:
         for line in file.readlines():
+            if(len(line) < 5):
+                continue
             print("process line", line)
             str = line.strip().split(" ")
             if mode == "pull":
