@@ -14,7 +14,7 @@ DEFAULT_PUSH_SERVER = {
 }
 
 
-def process_images(mode, imagefile, source_server, dest_server, keepsource, keepdest):
+def process_images(mode, imagefile, source_server, dest_server, keepsource, keepdest, nopull):
     with open(imagefile, "r") as file:
         for line in file.readlines():
             if (len(line) < 5):
@@ -28,7 +28,8 @@ def process_images(mode, imagefile, source_server, dest_server, keepsource, keep
                 source = source_server + "/" + str[1]
                 dest = dest_server + "/" + str[0]
 
-            subprocess.run(["docker pull " + source], shell=True, check=True)
+            if nopull == "default":
+                subprocess.run(["docker pull " + source], shell=True, check=True)
             subprocess.run(["docker tag " + source + " " + dest], shell=True, check=True)
             if keepsource == "default":
                 subprocess.run(["docker rmi " + source], shell=True, check=True)
@@ -46,6 +47,7 @@ parser.add_argument("-source", default="default", help="the source registry serv
 parser.add_argument("-dest", default="default", help="the dest registry server for tag")
 parser.add_argument("-keepsource", default="default", help="remain source image")
 parser.add_argument("-keepdest", default="default", help="remain dest image")
+parser.add_argument("-nopull", default="default", help="pull image before push mode")
 args = parser.parse_args()
 
 if args.mode == "pull":
@@ -59,4 +61,4 @@ else:
     if args.dest == "default":
         args.dest = DEFAULT_PUSH_SERVER["dest"]
 
-process_images(args.mode, args.image, args.source, args.dest, args.keepsource, args.keepdest)
+process_images(args.mode, args.image, args.source, args.dest, args.keepsource, args.keepdest, args.nopull)
