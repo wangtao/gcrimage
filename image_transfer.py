@@ -14,10 +14,10 @@ DEFAULT_PUSH_SERVER = {
 }
 
 
-def process_images(mode, imagefile, source_server, dest_server, remain):
+def process_images(mode, imagefile, source_server, dest_server, keepsource, keepdest):
     with open(imagefile, "r") as file:
         for line in file.readlines():
-            if(len(line) < 5):
+            if (len(line) < 5):
                 continue
             print("process line", line)
             str = line.strip().split(" ")
@@ -30,11 +30,12 @@ def process_images(mode, imagefile, source_server, dest_server, remain):
 
             subprocess.run(["docker pull " + source], shell=True, check=True)
             subprocess.run(["docker tag " + source + " " + dest], shell=True, check=True)
-            subprocess.run(["docker rmi " + source], shell=True, check=True)
+            if keepsource == "default":
+                subprocess.run(["docker rmi " + source], shell=True, check=True)
 
             if mode == "push":
                 subprocess.run(["docker push " + dest], shell=True, check=True)
-                if remain == "default":
+                if keepdest == "default":
                     subprocess.run(["docker rmi " + dest], shell=True, check=True)
 
 
@@ -43,7 +44,8 @@ parser.add_argument("-mode", default="pull", help="image list file")
 parser.add_argument("-image", default="image.list", help="image list file")
 parser.add_argument("-source", default="default", help="the source registry server")
 parser.add_argument("-dest", default="default", help="the dest registry server for tag")
-parser.add_argument("-remain", default="default", help="remain source image")
+parser.add_argument("-keepsource", default="default", help="remain source image")
+parser.add_argument("-keepdest", default="default", help="remain dest image")
 args = parser.parse_args()
 
 if args.mode == "pull":
@@ -57,4 +59,4 @@ else:
     if args.dest == "default":
         args.dest = DEFAULT_PUSH_SERVER["dest"]
 
-process_images(args.mode, args.image, args.source, args.dest, args.remain)
+process_images(args.mode, args.image, args.source, args.dest, args.keepsource, args.keepdest)
